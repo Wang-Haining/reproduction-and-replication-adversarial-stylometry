@@ -1,3 +1,11 @@
+# venv
+venv/**
+# content
+resource/MTed_RJ_corpus.zip
+resource/original_data/**
+resutls/**
+
+
 # ---> Windows
 # Windows thumbnail cache files
 Thumbs.db
@@ -31,7 +39,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
