@@ -2,7 +2,7 @@
 
 A repo hosts scripts for paper *Reproduction and Replication of an Adversarial Stylometry Experiment*.
 
-## Setting Up Virtual Environments
+## Setting up Environments
 
 ```bash
 python3.8 -m venv venv
@@ -10,10 +10,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Reproducing With Command Line
+## Reproducing with Command Line
 
 The results can be easily reproduced with `train.py` module.
-The module takes three optional arguments: `-c` (--corpus), `-t` (--task), and `-m` (--model).
+The module takes three optional arguments: `-c` (`--corpus`), `-t` (`--task`), and `-m` (`--model`).
 For example, the RJ corpus, to produce results under the control group using logistic regression (with the Koppel512 
 featureset), runs the following.
 

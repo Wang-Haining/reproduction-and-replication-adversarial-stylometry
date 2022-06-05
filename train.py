@@ -29,16 +29,18 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, Normalizer
 
 
-def get_data_from_rj(task, corpus_dir="resource/Riddell-Juola-Corpus_with_mt_samples"):
+def get_data_from_rj(
+    task, corpus_dir="resource/defending-against-authorship-attribution-corpus/corpus"
+):
     """
     Reads in texts and labels from the Riddell-Juola (RJ) corpus. The RJ version contains a control group, attacks of
     imitation and obfuscation, and three round-trip translation attacks (['translation_de', 'translation_ja',
     'translation_de_ja']). The translation attacks have testing samples are translated with Google Translate and
     share the same training examples with the control group.
     Args:
-        task: a str, should be in ['control', 'imitation', 'obfuscation', 'translation_de', 'translation_ja',
-            'translation_de_ja', 'cross_validation']; when specified as 'cross_validation', all the training samples of
-            ['control', 'imitation', 'obfuscation'] and no test samples will be returned
+        task: a str, should be in ['control', 'imitation', 'obfuscation', 'backtranslation_de', 'backtranslation_ja',
+            'backtranslation_de_ja', 'cross_validation']; when specified as 'cross_validation', all the training samples
+             of ['control', 'imitation', 'obfuscation'] and no test samples will be returned
         corpus_dir: a str, path to RJ corpus
     Returns:
         four lists, text/label of train/test sets
@@ -387,9 +389,9 @@ if __name__ == "__main__":
         "obfuscation",
         "cross_validation",
         "control",
-        "translation_de",
-        "translation_ja",
-        "translation_de_ja",
+        "backtranslation_de",
+        "backtranslation_ja",
+        "backtranslation_de_ja",
     ]
     # experiment counts, for cross-validation settings, the RUNS is divided by the count of folds
     RUNS = 1000
