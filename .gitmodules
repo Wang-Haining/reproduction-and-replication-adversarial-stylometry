@@ -1,3 +1,4 @@
 [submodule "resource/defending-against-authorship-attribution-corpus"]
 	path = resource/defending-against-authorship-attribution-corpus
-	url = git@codeberg.org:lab2124-sandbox/defending-against-authorship-attribution-corpus.git
+	url = https://codeberg.org/lab2124-sandbox/defending-against-authorship-attribution-corpus
+	branch = feature/backtranslation
