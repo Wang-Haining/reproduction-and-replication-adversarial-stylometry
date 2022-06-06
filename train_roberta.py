@@ -237,12 +237,14 @@ if __name__ == "__main__":
         "-r",
         "--runs",
         default=10,
+        type=int,
         help="how many runs on a certain candidate size should be performed, default 10",
     )
     parser.add_argument(
         "-b",
         "--batch_size",
         default=8,
+        type=int,
         help="batch size for all GPUs, default 8",
     )
     parser.add_argument(
