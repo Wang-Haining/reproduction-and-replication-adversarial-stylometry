@@ -130,6 +130,8 @@ def main(corpus,
                                               save_strategy='steps',
                                               evaluation_strategy="steps",
                                               logging_steps=batch_size,
+                                              eval_steps=batch_size,
+                                              save_steps=batch_size,
                                               # housekeeping
                                               fp16=False,
                                               overwrite_output_dir=True,
