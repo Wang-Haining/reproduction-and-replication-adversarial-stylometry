@@ -30,7 +30,7 @@ from utilities import get_data_from_rj, get_data_from_ebg, TASKS, SEED
 from transformers import RobertaForSequenceClassification, RobertaTokenizer, EarlyStoppingCallback
 
 
-def train(corpus,
+def main(corpus,
           task,
           runs=10,
           # device="cuda",
@@ -126,9 +126,10 @@ def train(corpus,
                                               greater_is_better=False,
                                               dataloader_num_workers=4,
                                               dataloader_pin_memory=True,
-                                              logging_strategy='epoch',
-                                              save_strategy='epoch',
-                                              evaluation_strategy="epoch",
+                                              logging_strategy='steps',
+                                              save_strategy='steps',
+                                              evaluation_strategy="steps",
+                                              logging_stops=batch_size,
                                               # housekeeping
                                               fp16=False,
                                               overwrite_output_dir=True,
@@ -262,4 +263,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # run exps
-    train(args.corpus, args.task, args.runs, args.batch_size, args.wandb_project_name)
+    main(args.corpus, args.task, args.runs, args.batch_size, args.wandb_project_name)

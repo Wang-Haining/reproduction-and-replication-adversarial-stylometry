@@ -27,7 +27,7 @@ from sklearn.preprocessing import StandardScaler, Normalizer
 from utilities import get_data_from_rj, get_data_from_ebg, vectorize_koppel512, vectorize_writeprints_static, TASKS, SEED
 
 
-def train(corpus, task, model):
+def main(corpus, task, model):
     """
     Reproducing the results reported in Reproduction and Replication of an Adversarial Stylometry Experiment.
     Args:
@@ -226,4 +226,4 @@ if __name__ == "__main__":
     os.environ["PYTHONHASHSEED"] = str(SEED)
 
     # runs exps
-    train(args.corpus, args.task, args.model)
+    main(args.corpus, args.task, args.model)
