@@ -129,7 +129,7 @@ def main(corpus,
                                               logging_strategy='steps',
                                               save_strategy='steps',
                                               evaluation_strategy="steps",
-                                              logging_stops=batch_size,
+                                              logging_steps=batch_size,
                                               # housekeeping
                                               fp16=False,
                                               overwrite_output_dir=True,
