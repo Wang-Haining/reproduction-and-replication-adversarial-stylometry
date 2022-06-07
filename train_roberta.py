@@ -32,10 +32,9 @@ from transformers import RobertaForSequenceClassification, RobertaTokenizer, Ear
 
 def main(corpus,
           task,
-          runs=10,
-          # device="cuda",
-          batch_size=8,
-          wandb_project_name='reproduction_and_replication_adversarial_stylometry-test'):
+          runs,
+          batch_size,
+          wandb_project_name):
     """
     Reproducing the results reported in Reproduction and Replication of an Adversarial Stylometry Experiment.
     Args:
@@ -64,8 +63,8 @@ def main(corpus,
         train_text, train_label, val_text, val_label, test_text, test_label = get_data_from_rj(task=task, dev=True)
     else:
         train_text, train_label, val_text, val_label, test_text, test_label = get_data_from_ebg(task=task, dev=True)
-
-    tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+    model_name = 'roberta-base'
+    tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     cand_sizes = (
         list(range(len(set(train_label)))[::5])[1:]
@@ -135,7 +134,7 @@ def main(corpus,
                                               num_train_epochs=200,
                                               save_total_limit=20,
                                               report_to='wandb')
-            model = RobertaForSequenceClassification.from_pretrained('roberta-base', num_labels=len(set(train_label_)))
+            model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=len(set(train_label_)))
             # .to(
             #     torch.device(device))
             # train the model
@@ -166,7 +165,7 @@ def main(corpus,
             time.sleep(10)
     if not os.path.isdir("results"):
         os.mkdir("results")
-    json.dump(accs, open(f"results/{corpus}_{task}_{model}.json", "w"))
+    json.dump(accs, open(f"results/{corpus}_{task}_{model_name}.json", "w"))
 
     for cand_size in cand_sizes:
         print(
@@ -174,7 +173,7 @@ def main(corpus,
             f"% (std. {np.round(np.std(accs[f'{cand_size}_candidates'])* 100, 2)}%)"
         )
 
-    print(f"\nResults have been saved to 'results/{corpus}_{task}_roberta-base.json'")
+    print(f"\nResults have been saved to 'results/{corpus}_{task}_{model_name}.json'")
     print("*" * 89)
 
 
