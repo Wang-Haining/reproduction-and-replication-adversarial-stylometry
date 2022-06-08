@@ -249,7 +249,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-w",
         "--wandb_project_name",
-        default="reproduction_and_replication_adversarial_stylometry-test",
+        default="reproduction_and_replication_adversarial_stylometry",
         help="wandb project name for monitoring",
     )
     parser.add_argument(
