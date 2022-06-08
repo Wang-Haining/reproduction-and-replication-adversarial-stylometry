@@ -1,3 +1,5 @@
+figures/
+chart_results.ipynb
 .idea/
 __pycache__/
 # venv

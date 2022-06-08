@@ -1,6 +1,6 @@
 """
-This module contains useful functions used to reproduce results in *Reproduction and Replication of an Adversarial
-Stylometry Experiment*.
+This module is used to reproduce SVM (writeprints-static) and logistic regression (koppel512) results in *Reproduction
+and Replication of an Adversarial Stylometry Experiment*.
 
 Author: Reproduction and Replication of an Adversarial Stylometry Experiment Authors
 Version: 1.0.0

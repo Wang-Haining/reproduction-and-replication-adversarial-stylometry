@@ -1,5 +1,5 @@
 """
-This module contains useful functions used to reproduce results in *Reproduction and Replication of an Adversarial
+This module is used to reproduce roberta-base results in *Reproduction and Replication of an Adversarial
 Stylometry Experiment*.
 
 Author: Reproduction and Replication of an Adversarial Stylometry Experiment Authors
