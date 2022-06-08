@@ -87,7 +87,7 @@ def main(corpus,
                 test_text_, test_label_ = zip(*[tpl for tpl in zip(test_text, test_label) if tpl[1] in val_label_])
             else:
                 # cross-validation like split
-                train_text_, train_label_, test_text_, test_label_ = train_test_split(list(train_text_),
+                train_text_, test_text_, train_label_, test_label_ = train_test_split(list(train_text_),
                                                                                       list(train_label_),
                                                                                       test_size=cand_size,
                                                                                       random_state=SEED,
