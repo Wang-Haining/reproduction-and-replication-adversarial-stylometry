@@ -26,6 +26,10 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, Normalizer
 from utilities import get_data_from_rj, get_data_from_ebg, vectorize_koppel512, vectorize_writeprints_static, TASKS, SEED
 
+# fixes seed for reproducibility
+random.seed(SEED)
+np.random.seed(SEED)
+
 
 def main(corpus, task, model):
     """
@@ -220,10 +224,7 @@ if __name__ == "__main__":
 
     # experiment counts, for cross-validation settings, the RUNS is divided by the count of folds
     RUNS = 1000
-    # fixes seed for reproducibility
-    random.seed(SEED)
-    np.random.seed(SEED)
-    os.environ["PYTHONHASHSEED"] = str(SEED)
+
 
     # runs exps
     main(args.corpus, args.task, args.model)
