@@ -29,6 +29,7 @@ TASKS = [
     "backtranslation_de",
     "backtranslation_ja",
     "backtranslation_de_ja",
+    "special_english",
 ]
 SEED = 42
 
