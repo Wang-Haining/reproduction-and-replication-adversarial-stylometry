@@ -15,21 +15,10 @@ __license__ = "ISC"
 
 import os
 import re
-import json
-import wandb
-import random
 import chardet
 import numpy as np
-from copy import deepcopy
-from sklearn.svm import SVC
-from sklearn.pipeline import Pipeline
 from writeprints_static import WriteprintsStatic
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import StandardScaler, Normalizer
-from transformers import Trainer, TrainingArguments, TrainerCallback
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
-from transformers import RobertaForSequenceClassification, RobertaTokenizer, EarlyStoppingCallback
+
 
 # possible tasks
 TASKS = [
