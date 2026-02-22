@@ -1,8 +1,10 @@
 # reproduction-and-replication-adversarial-stylometry
 
-A repo hosts scripts for paper *Reproduction and Replication of an Adversarial Stylometry Experiment*.
+This repository contains scripts for the paper *Reproduction and Replication of an Adversarial Stylometry Experiment*.
 
-## Setting up Environments
+This reproducibility bundle is archived on Zenodo: https://doi.org/10.5281/zenodo.18729526
+
+## Setting up environments
 
 ```bash
 python3.8 -m venv venv
@@ -10,38 +12,77 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Reproducing with Command Line
+## Data layout
 
-The results can be easily reproduced with `train.py` module.
-The module takes three optional arguments: `-c` (`--corpus`), `-t` (`--task`), and `-m` (`--model`).
-For example, the RJ corpus, to produce results under the control group using logistic regression (with the Koppel512
-featureset), runs the following.
+- **RJ (replication data)** is included in this bundle under:
+  `resource/defending-against-authorship-attribution-corpus/`
+
+- **EBG (reproduction data)** is third-party data and is not redistributed here.
+  Obtain it from the PSAL Anonymouth repository:
+  https://github.com/psal/anonymouth/tree/master/jsan_resources/corpora/amt
+
+  Place the downloaded `amt` corpus at:
+  `resource/Drexel-AMT-Corpus/`
+
+## Reproducing from the command line
+
+### SVM (Writeprints-static) and logistic regression (Koppel512)
+
+`train.py` reproduces the SVM and logistic regression results. It takes three arguments:
+
+- `-c` / `--corpus`: `rj` or `ebg`
+- `-t` / `--task`:
+  - for both corpora: `imitation`, `obfuscation`, `cross_validation`
+  - for RJ only: `control`, `backtranslation_de`, `backtranslation_ja`, `backtranslation_de_ja`
+- `-m` / `--model`: `svm` or `logistic_regression`
+
+Example: RJ control results with logistic regression:
 
 ```bash
 python train.py -c rj -t control -m logistic_regression
 ```
-The results will be printed out and a .json file will be saved to './results' with informative file names (in this case,
-'./results/rj_control_logistic_regression.json'). Running one experiment can take several minutes.
 
-Argument `-c` can be specified as either 'rj' (the Riddell-Juola corpus) or 'ebg' (the Extended-Brennan-Greenstadt
-corpus).
-For both RJ and EBG corpus, 'imitation', 'obfuscation', and 'cross_validation' can be specified to `-t`. RJ can take in
-additionally values: 'control', 'translation_ja', 'translation_de', and 'translation_de_ja'.
-Argument `-m` takes either 'svm' or 'logistic_regression'. When specified as 'svm', the "writeprints-static" featureset
-will be used; otherwise the Kopppel512 featureset will be used.
+Outputs are printed to stdout and saved under `./results/` with informative filenames, for example:
 
-## License
-ISC
+- `./results/rj_control_logistic_regression.json`
+
+To reproduce all SVM + logistic regression JSON outputs used in the paper:
+
+```bash
+# EBG
+for task in obfuscation imitation cross_validation; do
+  for model in svm logistic_regression; do
+    python train.py -c ebg -t "$task" -m "$model"
+  done
+done
+
+# RJ
+for task in control obfuscation imitation cross_validation backtranslation_de backtranslation_ja backtranslation_de_ja; do
+  for model in svm logistic_regression; do
+    python train.py -c rj -t "$task" -m "$model"
+  done
+done
+```
+
+### RoBERTa (optional, compute-intensive)
+
+`train_roberta.py` reproduces the RoBERTa results. This requires additional dependencies (e.g., PyTorch, Transformers, Weights \& Biases) and typically a GPU. See `train_roberta.py --help` for arguments.
+
+## Licenses
+
+- Code: ISC (see `LICENSE`)
+- RJ corpus, `metadata.csv`, and MTurk study materials: CC0 1.0 (see `DATA_LICENSE`)
+- EBG: third-party data obtained from the original source above
 
 ## Citation
+
 ```tex
 @misc{wang2026reproductionreplicationadversarialstylometry,
-      title={Reproduction and Replication of an Adversarial Stylometry Experiment},
-      author={Haining Wang and Patrick Juola and Allen Riddell},
-      year={2026},
-      eprint={2208.07395},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2208.07395},
+  title={Reproduction and Replication of an Adversarial Stylometry Experiment},
+  author={Haining Wang and Patrick Juola and Allen Riddell},
+  year={2026},
+  eprint={2208.07395},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL},
+  url={https://arxiv.org/abs/2208.07395}
 }
-```
