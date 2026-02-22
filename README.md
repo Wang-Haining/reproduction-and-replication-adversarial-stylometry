@@ -77,7 +77,7 @@ done
 ## Citation
 
 ```tex
-@misc{wang2026reproductionreplicationadversarialstylometry,
+@misc{wang2026rr,
   title={Reproduction and Replication of an Adversarial Stylometry Experiment},
   author={Haining Wang and Patrick Juola and Allen Riddell},
   year={2026},
