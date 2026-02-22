@@ -13,28 +13,33 @@ __author__ = (
 __version__ = "1.0.0"
 __license__ = "ISC"
 
-import os
+
+import argparse
 import json
+import os
+import shutil
 import time
+from copy import deepcopy
+
+import numpy as np
 import torch
 import wandb
-import shutil
-import argparse
-import numpy as np
-from copy import deepcopy
 from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from transformers import Trainer, TrainingArguments, TrainerCallback
-from utilities import get_data_from_rj, get_data_from_ebg, TASKS, SEED
-from transformers import RobertaForSequenceClassification, RobertaTokenizer, EarlyStoppingCallback
+from sklearn.preprocessing import LabelEncoder
+from transformers import (
+    EarlyStoppingCallback,
+    RobertaForSequenceClassification,
+    RobertaTokenizer,
+    Trainer,
+    TrainerCallback,
+    TrainingArguments,
+)
+
+from utilities import SEED, TASKS, get_data_from_ebg, get_data_from_rj
 
 
-def main(corpus,
-          task,
-          runs,
-          batch_size,
-          wandb_project_name):
+def main(corpus, task, runs, batch_size, wandb_project_name):
     """
     Reproducing the results reported in Reproduction and Replication of an Adversarial Stylometry Experiment.
     Args:
@@ -60,10 +65,14 @@ def main(corpus,
     )
     # reads data
     if corpus == "rj":
-        train_text, train_label, val_text, val_label, test_text, test_label = get_data_from_rj(task=task, dev=True)
+        train_text, train_label, val_text, val_label, test_text, test_label = (
+            get_data_from_rj(task=task, dev=True)
+        )
     else:
-        train_text, train_label, val_text, val_label, test_text, test_label = get_data_from_ebg(task=task, dev=True)
-    model_name = 'roberta-base'
+        train_text, train_label, val_text, val_label, test_text, test_label = (
+            get_data_from_ebg(task=task, dev=True)
+        )
+    model_name = "roberta-base"
     tokenizer = RobertaTokenizer.from_pretrained(model_name)
 
     cand_sizes = (
@@ -79,62 +88,83 @@ def main(corpus,
         for run in range(runs):
             # sample `cand_size` authors
             val_text_, val_label_ = zip(
-                *rng.choice(list(zip(val_text, val_label)), size=cand_size, replace=False).tolist())
-            train_text_, train_label_ = zip(*[tpl for tpl in zip(train_text, train_label) if tpl[1] in val_label_])
+                *rng.choice(
+                    list(zip(val_text, val_label)), size=cand_size, replace=False
+                ).tolist()
+            )
+            train_text_, train_label_ = zip(
+                *[tpl for tpl in zip(train_text, train_label) if tpl[1] in val_label_]
+            )
 
-            if task != 'cross_validation':
+            if task != "cross_validation":
                 # address certain attack
-                test_text_, test_label_ = zip(*[tpl for tpl in zip(test_text, test_label) if tpl[1] in val_label_])
+                test_text_, test_label_ = zip(
+                    *[tpl for tpl in zip(test_text, test_label) if tpl[1] in val_label_]
+                )
             else:
                 # cross-validation like split
-                train_text_, test_text_, train_label_, test_label_ = train_test_split(list(train_text_),
-                                                                                      list(train_label_),
-                                                                                      test_size=cand_size,
-                                                                                      random_state=SEED,
-                                                                                      stratify=list(train_label_))
+                train_text_, test_text_, train_label_, test_label_ = train_test_split(
+                    list(train_text_),
+                    list(train_label_),
+                    test_size=cand_size,
+                    random_state=SEED,
+                    stratify=list(train_label_),
+                )
             # encode labels
             le = LabelEncoder()
             train_label_ = le.fit_transform(train_label_)
             test_label_ = le.transform(test_label_)
             val_label_ = le.transform(val_label_)
             # encode data
-            train_encodings = tokenizer(train_text_, truncation=True, padding=True, max_length=512)
-            val_encodings = tokenizer(val_text_, truncation=True, padding=True, max_length=512)
-            test_encodings = tokenizer(test_text_, truncation=True, padding=True, max_length=512)
+            train_encodings = tokenizer(
+                train_text_, truncation=True, padding=True, max_length=512
+            )
+            val_encodings = tokenizer(
+                val_text_, truncation=True, padding=True, max_length=512
+            )
+            test_encodings = tokenizer(
+                test_text_, truncation=True, padding=True, max_length=512
+            )
             train_dataset = CommonDataset(train_encodings, train_label_)
             val_dataset = CommonDataset(val_encodings, val_label_)
             test_dataset = CommonDataset(test_encodings, test_label_)
 
             # init logger each time
-            wandb.init(project=wandb_project_name,
-                       group=f'{corpus}-{task}-cand_size={str(cand_size)}')
-            run_name = f'{corpus}-{task}-cand_size={str(cand_size)}-run={str(run)}'
-            training_args = TrainingArguments(run_name=f'{corpus}-{task}-{cand_size}-{str(run)}',
-                                              output_dir=os.path.join('script/saved_models/roberta_ckpts', run_name),
-                                              seed=SEED,
-                                              do_eval=True,
-                                              learning_rate=3e-5,
-                                              adam_beta1=0.99,
-                                              adam_beta2=0.9999,
-                                              adam_epsilon=1e-08,
-                                              per_device_train_batch_size=batch_size,
-                                              per_device_eval_batch_size=batch_size,
-                                              warmup_ratio=.05,
-                                              load_best_model_at_end=True,
-                                              metric_for_best_model='eval_loss',
-                                              greater_is_better=False,
-                                              dataloader_num_workers=4,
-                                              dataloader_pin_memory=True,
-                                              logging_strategy='epoch',
-                                              save_strategy='epoch',
-                                              evaluation_strategy="epoch",
-                                              # housekeeping
-                                              fp16=False,
-                                              overwrite_output_dir=True,
-                                              num_train_epochs=200,
-                                              save_total_limit=20,
-                                              report_to='wandb')
-            model = RobertaForSequenceClassification.from_pretrained(model_name, num_labels=len(set(train_label_)))
+            wandb.init(
+                project=wandb_project_name,
+                group=f"{corpus}-{task}-cand_size={str(cand_size)}",
+            )
+            run_name = f"{corpus}-{task}-cand_size={str(cand_size)}-run={str(run)}"
+            training_args = TrainingArguments(
+                run_name=f"{corpus}-{task}-{cand_size}-{str(run)}",
+                output_dir=os.path.join("script/saved_models/roberta_ckpts", run_name),
+                seed=SEED,
+                do_eval=True,
+                learning_rate=3e-5,
+                adam_beta1=0.99,
+                adam_beta2=0.9999,
+                adam_epsilon=1e-08,
+                per_device_train_batch_size=batch_size,
+                per_device_eval_batch_size=batch_size,
+                warmup_ratio=0.05,
+                load_best_model_at_end=True,
+                metric_for_best_model="eval_loss",
+                greater_is_better=False,
+                dataloader_num_workers=4,
+                dataloader_pin_memory=True,
+                logging_strategy="epoch",
+                save_strategy="epoch",
+                evaluation_strategy="epoch",
+                # housekeeping
+                fp16=False,
+                overwrite_output_dir=True,
+                num_train_epochs=200,
+                save_total_limit=20,
+                report_to="wandb",
+            )
+            model = RobertaForSequenceClassification.from_pretrained(
+                model_name, num_labels=len(set(train_label_))
+            )
             # .to(
             #     torch.device(device))
             # train the model
@@ -144,14 +174,14 @@ def main(corpus,
                 train_dataset=train_dataset,
                 eval_dataset=val_dataset,
                 compute_metrics=compute_metrics,
-                callbacks=[EarlyStoppingCallback(early_stopping_patience=50)]
+                callbacks=[EarlyStoppingCallback(early_stopping_patience=50)],
             )
             trainer.add_callback(TrainAccuracyCallback(trainer))
             trainer.train()
 
             # make prediction
             prediction = trainer.predict(test_dataset)
-            acc = prediction.metrics['test_accuracy']
+            acc = prediction.metrics["test_accuracy"]
             wandb.log({"test_accuracy": acc})
             accs[f"{cand_size}_candidates"].append(acc)
 
@@ -161,7 +191,7 @@ def main(corpus,
             # free GPU memory for the next run
             torch.cuda.empty_cache()
             # remove model folders
-            shutil.rmtree(os.path.join('script/saved_models/roberta_ckpts', run_name))
+            shutil.rmtree(os.path.join("script/saved_models/roberta_ckpts", run_name))
             time.sleep(10)
     if not os.path.isdir("results"):
         os.mkdir("results")
@@ -196,7 +226,7 @@ def compute_metrics(pred):
     preds = pred.predictions.argmax(-1)
     acc = accuracy_score(labels, preds)
     return {
-        'accuracy': acc,
+        "accuracy": acc,
     }
 
 
@@ -209,28 +239,30 @@ class TrainAccuracyCallback(TrainerCallback):
     def on_epoch_end(self, args, state, control, **kwargs):
         if control.should_evaluate:
             control_copy = deepcopy(control)
-            self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix="train")
+            self._trainer.evaluate(
+                eval_dataset=self._trainer.train_dataset, metric_key_prefix="train"
+            )
             return control_copy
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Reproduce results in the paper Reproduction and Replication of an Adversarial Stylometry "
-                    "Experiment"
+        "Experiment"
     )
     parser.add_argument(
         "-c",
         "--corpus",
         default="rj",
         help="corpus to use, allows 'rj' (Riddell-Juola corpus with machine transltion samples) and 'ebg' ("
-             "Extended-Brennan-Greenstadt corpus)",
+        "Extended-Brennan-Greenstadt corpus)",
     )
     parser.add_argument(
         "-t",
         "--task",
         default="obfuscation",
         help="task for a specific corpus, rj and ebg both allow 'imitation', 'obfuscation', and 'cross_validation'; "
-             "rj allows additional 'control', 'translation_de', 'translation_ja', and 'translation_de_ja' ",
+        "rj allows additional 'control', 'translation_de', 'translation_ja', and 'translation_de_ja' ",
     )
     parser.add_argument(
         "-r",

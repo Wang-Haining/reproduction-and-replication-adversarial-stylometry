@@ -13,18 +13,28 @@ __author__ = (
 __version__ = "1.0.0"
 __license__ = "ISC"
 
-import os
+
+import argparse
 import json
+import os
 import random
 import warnings
-import argparse
+
 import numpy as np
-from sklearn.svm import SVC
-from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import StandardScaler, Normalizer
-from utilities import get_data_from_rj, get_data_from_ebg, vectorize_koppel512, vectorize_writeprints_static, TASKS, SEED
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import Normalizer, StandardScaler
+from sklearn.svm import SVC
+
+from utilities import (
+    SEED,
+    TASKS,
+    get_data_from_ebg,
+    get_data_from_rj,
+    vectorize_koppel512,
+    vectorize_writeprints_static,
+)
 
 # fixes seed for reproducibility
 random.seed(SEED)
@@ -224,7 +234,6 @@ if __name__ == "__main__":
 
     # experiment counts, for cross-validation settings, the RUNS is divided by the count of folds
     RUNS = 1000
-
 
     # runs exps
     main(args.corpus, args.task, args.model)
